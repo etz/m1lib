@@ -9,4 +9,5 @@
 
 ## Usage:
 
-`m1lib.login(m1user, m1pass)` - Logs into the M1Finance Account using Chromedriver
+`m1lib.login(config.username, config.password)` - Logs into the M1Finance Account using Chromedriver
+`m1lib.selectAccount(config.accountType)` - Selects the account to make changes in
