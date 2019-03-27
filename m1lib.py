@@ -6,6 +6,16 @@ from selenium.common.exceptions import WebDriverException
 import time
 import re
 
+#Function: DebugCommand
+#Usage: Prints debugging information in the console
+#Returns: Nothing
+def DebugCommand(string):
+    global debug_variable
+    #Change me to debug!
+    debug_variable = 1
+    if debug_variable == 1:
+        print ("DEBUG: " + string)
+
 
 #Function: login(user,pass)
 #Usage: Initalizes Chrome & logs into the M1 Finance Account
@@ -46,54 +56,51 @@ def login(m1user, m1pass):
         pass
     return 0
 
-def getAccounts():
-    accounts = []
-    #driver.find_elements_by_class("style__trigger__6kog7")[0].click()
-    #Finds parent element by Account text
-    driver.find_elements_by_xpath("//*[contains(text(), ' - ')]/../..")[1].click()
-    accountList = driver.find_elements_by_xpath("//*[contains(text(), ' - ')]")
-    print(accountList)
-#    for account in accountList:
-#        if account.text in accounts:
-#            pass
-#        else:
-#            print(account.text)
-#            accounts.append(account.text)
-#    return accounts
-
 
 #Function: selectAccount
 #Usage: Selects the account determined in the Config file
 #Returns: Nothing
 
 def selectAccount(accType):
-    accountList = getAccounts()
-    print ("Beginning Account Selection")
+    driver.find_elements_by_xpath("//*[contains(text(), ' - ')]/../..")[1].click()
+    DebugCommand("Beginning Account Selection")
     accountType = driver.find_elements_by_xpath("//*[contains(text(), ' - ')]")[1].text
-    print (accountType)
+    DebugCommand(str(accountType))
     if accType not in accountType:
         driver.find_element_by_xpath("""//*[contains(text(), '""" + accType + """')]/..""").click()
-        time.sleep(2)
+        time.sleep(4)
         selectAccount(accType)
-        pass
     time.sleep(2)
-    print ("Account Selected!")
+    DebugCommand("Account Selected")
 
 #Function: CheckOpenOrder
 #Usage: Returns Order value depending on accType
-#Returns: "0" if pending buy order, "1" else
+#Returns: Logs order information, "0" if pending order, "1" else
 
-def CheckOpenOrder(accType):
+def checkOpenPV(accType):
+    DebugCommand("Checking orders against Portfolio: " + accType)
     selectAccount(accType)
-    orderCompletion = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div/div[1]/span""").text
-    if "Pending buy" in orderCompletion:
-        print("PENDING:" + orderCompletion)
-        return 0
-    else:
+    try:
+        orderCompletion = driver.find_element_by_xpath("""//*[contains(text(), 'Pending')]""").text
+        DebugCommand(str(orderCompletion))
+        if "buy" in orderCompletion:
+
+            #RETURNS A BUY ORDER
+
+            print("PENDING BUY:" + str(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", orderCompletion)[0]))
+            return 0
+        elif "sell" in orderCompletion:
+
+            #RETURNS A SELL ORDER
+
+            print("PENDING SELL:" + str(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", orderCompletion)[0]))
+            return 0
+    except:
         return 1
 
 #Function: CheckDayGain
 #Usage: Provides the USD return for the accType
+#Returns: % gain as float()
 def CheckDayGain(accType):
     print ("Beginning Return Check")
     selectAccount(accType)
@@ -103,34 +110,69 @@ def CheckDayGain(accType):
     return float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/div[3]/div/div[2]/span/span[2]""").text)[0])
 
 
-#Function: BuyPie
-#Usage: Purchases a M1 Pie based on the USD value and the accType
-#Returns: Nothing
-def BuyPie(amount, accType):
+#Function: BuyPortfolio
+#Usage: Purchases a M1 Portfolio based on the USD value (amount) and the accType
+#Returns: "0" if purchase successful
+def BuyPortfolio(amount, accType):
+    print ("Beginning Portfolio Purchase")
+    if (checkOpenPV(accType) == 1):
+        if (int(amount) < 10):
+            print("Orders under $10 cannot be processed")
+            return
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[3]/div/button[1]""").click()
+        time.sleep(4)
+        try:
+            usernameField = driver.find_element_by_name("cashFlow")
+            usernameField.send_keys(amount)
+        except:
+            print("It appears there is already a concurrent order.")
+            return 1
+        ConfirmOrder()
+    checkOpenPV(accType)
+
+def OrderPie(amount, pid):
     print ("Beginning Pie Purchase")
-    selectAccount(accType)
-    if (amount < 10):
-        print("Orders under $10 cannot be processed")
-        return
-    driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[3]/div/button[1]""").click()
-    time.sleep(4)
+    url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
+    driver.get(url)
+    time.sleep(5)
+    if amount < 0:
+        print("Amount is less than 0")
+        driver.find_elements_by_xpath("//*[contains(text(), 'Sell')]")[0].click()
+        time.sleep(5)
+        amount = amount * -1
     try:
         usernameField = driver.find_element_by_name("cashFlow")
         usernameField.send_keys(amount)
     except:
-        print("It appears there is already a concurrent order.")
-        return
+        print("There was an issue with the connection or the element 'cashFlow' could not be found.")
+        BuyPie(amount, accType, pid)
+        return 1
+    ConfirmOrder()
+    VerifyOrder(pid)
+
+#Function: ConfirmOrder
+#Usage: Completes an opened order after the cashFlow element has been filled
+#Returns: Nothing
+def ConfirmOrder():
     driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/div[6]/button[2]""").click()
     time.sleep(3)
     driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/div[9]/button[2]""").click()
     time.sleep(6)
+
+#Function: VerifyOrder
+#Usage: Checks if an order was completed as requested
+#Returns: Nothing
+def VerifyOrder(pid):
+    print ("Beginning Order Verification")
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
+    driver.get(url)
+    time.sleep(5)
+    #selectAccount(accType)
     try:
         orderCompletion = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div/div[1]/span""").text
     except:
-        print ("There was an issue completing your order as intended.")
-        BuyPie(amount, accType)
-    if "buy" in orderCompletion:
-        print ("Purchase successful! " + amount + "$ bought")
+        pass
+
 
 #Function: OrderWeight
 #Usage: Determines a new value determined on a base and multiplier
@@ -147,7 +189,8 @@ def OrderWeight(base, multiplier):
     return newValue
 
 
-
+def closeSession():
+    driver.close()
 
 #PercentGain = CheckDayGain(accountType)
 #OrderWeight(75, float(PercentGain[0]))
