@@ -159,7 +159,12 @@ def OrderPie(amount, pid):
     time.sleep(5)
     if amount < 0:
         print("Amount is less than 0")
-        driver.find_elements_by_xpath("//*[contains(text(), 'Sell')]")[2].click()
+        SellButton = driver.find_elements_by_xpath("//*[contains(text(), 'Sell')]")
+        for element in SellButton:
+            try:
+                element.click()
+            except:
+                pass
         time.sleep(5)
         amount = amount * -1
     try:

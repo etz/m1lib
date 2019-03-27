@@ -5,8 +5,6 @@ import config
 
 if (m1lib.login(config.username, config.password) == 0):
     m1lib.DebugCommand("I successfully ran the login function.")
-    PercentGain = m1lib.CheckDayGain(config.accountType)
-    print("My portfolio changed " PercentGain + "% today.")
 
     #Your magic here... 😄
 
