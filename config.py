@@ -1,0 +1,4 @@
+username = ""
+password = ""
+accountType = ""
+BaseBuy = ""
