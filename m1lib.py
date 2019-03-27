@@ -8,7 +8,7 @@ import re
 
 #Function: DebugCommand
 #Usage: Prints debugging information in the console
-#Returns: Nothing
+#Returns:
 def DebugCommand(string):
     global debug_variable
     #Change me to debug!
@@ -18,20 +18,21 @@ def DebugCommand(string):
 
 
 #Function: login(user,pass)
-#Usage: Initalizes Chrome & logs into the M1 Finance Account
+#Usage: Initalizes Chrome & logs into the associated M1 Finance account
 #Returns: "0" if login successful
 def login(m1user, m1pass):
+    DebugCommand("Beginning User Login")
     global driver
-    #Initalize Chrome Driver
+    #Initalize Chromedriver
     chromeOptions = webdriver.ChromeOptions()
     capabilities=webdriver.DesiredCapabilities.CHROME
     driver= webdriver.Chrome(options=chromeOptions,desired_capabilities=capabilities)
-    #Navigate to M1 Website
+    #Navigate to M1
     url = "https://dashboard.m1finance.com/login"
     driver.get(url)
     #Allow time to load
     time.sleep(4)
-    #Send user Credentials
+    #Send user credentials
     usernameField = driver.find_element_by_name("username")
     usernameField.send_keys(m1user)
     pwField = driver.find_element_by_name("password")
@@ -59,11 +60,10 @@ def login(m1user, m1pass):
 
 #Function: selectAccount
 #Usage: Selects the account determined in the Config file
-#Returns: Nothing
-
+#Returns:
 def selectAccount(accType):
-    driver.find_elements_by_xpath("//*[contains(text(), ' - ')]/../..")[1].click()
     DebugCommand("Beginning Account Selection")
+    driver.find_elements_by_xpath("//*[contains(text(), ' - ')]/../..")[1].click()
     accountType = driver.find_elements_by_xpath("//*[contains(text(), ' - ')]")[1].text
     DebugCommand(str(accountType))
     if accType not in accountType:
@@ -76,7 +76,7 @@ def selectAccount(accType):
 #Function: CheckOpenOrder
 #Usage: Returns Order value depending on accType
 #Returns: Logs order information, "0" if pending order, "1" else
-
+#TODO
 def checkOpenPV(accType):
     DebugCommand("Checking orders against Portfolio: " + accType)
     selectAccount(accType)
@@ -98,15 +98,32 @@ def checkOpenPV(accType):
     except:
         return 1
 
+#Function: VerifyPie
+#Usage: Checks if an order was completed as requested
+#Returns: Nothing
+def VerifyPie(pid):
+    print ("Beginning Order Verification")
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
+    driver.get(url)
+    time.sleep(5)
+    #selectAccount(accType)
+    try:
+        orderCompletion = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div/div[1]/span""").text
+        DebugCommand("Order complete")
+    except:
+        DebugCommand("Order failed")
+        pass
+
+
 #Function: CheckDayGain
 #Usage: Provides the USD return for the accType
 #Returns: % gain as float()
 def CheckDayGain(accType):
-    print ("Beginning Return Check")
+    DebugCommand("Checking Daily Returns against" + str(accType))
     selectAccount(accType)
     driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
     time.sleep(3)
-    print ("RC Complete")
+    DebugCommand("Returns Check Complete")
     return float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/div[3]/div/div[2]/span/span[2]""").text)[0])
 
 
@@ -130,6 +147,11 @@ def BuyPortfolio(amount, accType):
         ConfirmOrder()
     checkOpenPV(accType)
 
+
+
+#Function: OrderPie
+#Usage: Purchases a M1 Pie based on the USD value (amount) and the pie ID (pid)
+#Returns: "0" if purchase successful
 def OrderPie(amount, pid):
     print ("Beginning Pie Purchase")
     url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
@@ -137,41 +159,28 @@ def OrderPie(amount, pid):
     time.sleep(5)
     if amount < 0:
         print("Amount is less than 0")
-        driver.find_elements_by_xpath("//*[contains(text(), 'Sell')]")[0].click()
+        driver.find_elements_by_xpath("//*[contains(text(), 'Sell')]")[2].click()
         time.sleep(5)
         amount = amount * -1
     try:
         usernameField = driver.find_element_by_name("cashFlow")
         usernameField.send_keys(amount)
     except:
-        print("There was an issue with the connection or the element 'cashFlow' could not be found.")
-        BuyPie(amount, accType, pid)
+        DebugCommand("There was an issue with the connection or the element 'cashFlow' could not be found.")
         return 1
     ConfirmOrder()
-    VerifyOrder(pid)
+    VerifyPie(pid)
 
 #Function: ConfirmOrder
 #Usage: Completes an opened order after the cashFlow element has been filled
-#Returns: Nothing
+#Returns:
 def ConfirmOrder():
     driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/div[6]/button[2]""").click()
     time.sleep(3)
     driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/div[9]/button[2]""").click()
     time.sleep(6)
 
-#Function: VerifyOrder
-#Usage: Checks if an order was completed as requested
-#Returns: Nothing
-def VerifyOrder(pid):
-    print ("Beginning Order Verification")
-    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
-    driver.get(url)
-    time.sleep(5)
-    #selectAccount(accType)
-    try:
-        orderCompletion = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div/div[1]/span""").text
-    except:
-        pass
+
 
 
 #Function: OrderWeight
