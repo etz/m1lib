@@ -1,5 +1,15 @@
 # M1 Finance Python 3 + Selenium Wrapper
 
+## Dependencies:
+
+You probably already have:
+- Python 3+
+- Python Package: `re`
+
+You will need:
+- Selenium `python3 -m pip install selenium`
+- Chromedriver
+
 ## Installation:
 
 1. Download ZIP or GIT with ```https://github.com/etz/m1lib.git```
