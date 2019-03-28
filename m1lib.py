@@ -196,7 +196,7 @@ def checkReturnsPie(pid, timeframe):
 #Function: BuyPortfolio
 #Usage: Purchases a M1 Portfolio based on the USD value (amount) and the accType
 #Returns: True if purchase successful
-def orderPortfolio(amount, accType):
+def orderPV(amount, accType):
     print ("Beginning Portfolio Purchase")
     if (checkOpenPV(accType) == 1):
         if amount < 0:
