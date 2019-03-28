@@ -6,6 +6,8 @@ from selenium.common.exceptions import WebDriverException
 import time
 import re
 
+
+###### DEBUGGING ######
 #Function: DebugCommand
 #Usage: Prints debugging information in the console
 #Returns:
@@ -15,6 +17,9 @@ def DebugCommand(string):
     debug_variable = 1
     if debug_variable == 1:
         print ("DEBUG: " + string)
+
+
+###### AUTH ######
 
 
 #Function: login(user,pass)
@@ -41,6 +46,13 @@ def login(m1user, m1pass):
     driver.find_element_by_xpath("""//*[@id="root"]/div/div/div/div[2]/div/div/form/div[4]/div/button""").click()
     #Allow time to load
     time.sleep(8)
+    status = checkLogin()
+    return status
+
+#Function: CheckLogin()
+#Usage: Verifys if Credentials were used correctly from config.py
+#Returns: "0" if properly authenticated
+def checkLogin():
     #Check if config.py is empty
     try:
         if (driver.find_element_by_xpath("""//*[@id="root"]/div/div/div/div[2]/div/div/form/div[2]/div/div[1]/div[2]/div""").text == "Required"):
@@ -57,8 +69,14 @@ def login(m1user, m1pass):
         pass
     return 0
 
+#Function: closeSession()
+#Usage: Self-explanatory
+#Returns:
+def closeSession():
+    driver.close()
 
-#Function: selectAccount
+
+#Function: selectAccount(accType)
 #Usage: Selects the account determined in the Config file
 #Returns:
 def selectAccount(accType):
@@ -72,6 +90,10 @@ def selectAccount(accType):
         selectAccount(accType)
     time.sleep(2)
     DebugCommand("Account Selected")
+
+
+###### STATUS ######
+
 
 #Function: CheckOpenOrder
 #Usage: Returns Order value depending on accType
@@ -98,100 +120,164 @@ def checkOpenPV(accType):
     except:
         return 1
 
-#Function: VerifyPie
+#Function: verifyPie
 #Usage: Checks if an order was completed as requested
-#Returns: Nothing
-def VerifyPie(pid):
+#Returns: True if order success
+def verifyPie(pid):
     print ("Beginning Order Verification")
     url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
     driver.get(url)
     time.sleep(5)
-    #selectAccount(accType)
     try:
         orderCompletion = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div/div[1]/span""").text
         DebugCommand("Order complete")
+        return True
     except:
         DebugCommand("Order failed")
-        pass
+        return False
 
 
-#Function: CheckDayGain
-#Usage: Provides the USD return for the accType
+#Function: CheckReturnsPV
+#Usage: Provides the percentage return for the account Type
 #Returns: % gain as float()
-def CheckDayGain(accType):
-    DebugCommand("Checking Daily Returns against" + str(accType))
+def checkReturnsPV(accType, timeframe):
+    DebugCommand("Checking" + timeframe + " returns against: " + str(accType))
     selectAccount(accType)
-    driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    if "day" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "week" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "month" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "quarter" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "year" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "all" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    else:
+        DebugCommand("Timeframe not recognized.")
+        return 0
     time.sleep(3)
     DebugCommand("Returns Check Complete")
     return float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/div[3]/div/div[2]/span/span[2]""").text)[0])
 
 
+#Function: checkReturnsPie
+#Usage: Returns the percentage change over the timeframe for the pie (DOES NOT INCLUDE YOUR HOLDINGS)
+#Returns: % gain as float()
+def checkReturnsPie(pid, timeframe):
+    url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
+    driver.get(url)
+    time.sleep(5)
+    DebugCommand("Checking" + timeframe + " returns against: " + str(pid))
+    if "day" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "week" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "month" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "quarter" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "year" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "all" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    else:
+        DebugCommand("Timeframe not recognized.")
+        return 0
+    time.sleep(3)
+    DebugCommand("Returns Check Complete")
+    return float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/div[3]/div/div[2]/span/span[2]""").text)[0])
+
+
+
+
 #Function: BuyPortfolio
 #Usage: Purchases a M1 Portfolio based on the USD value (amount) and the accType
-#Returns: "0" if purchase successful
-def BuyPortfolio(amount, accType):
+#Returns: True if purchase successful
+def orderPortfolio(amount, accType):
     print ("Beginning Portfolio Purchase")
     if (checkOpenPV(accType) == 1):
-        if (int(amount) < 10):
-            print("Orders under $10 cannot be processed")
-            return
+        if amount < 0:
+            ticksell = 1
+            amount = amount * -1
+        if amount < 10:
+            DebugCommand("Orders under $10 cannot be processed")
+            return False
         driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[3]/div/button[1]""").click()
         time.sleep(4)
         try:
+            if ticksell == 1:
+                startSell()
             usernameField = driver.find_element_by_name("cashFlow")
             usernameField.send_keys(amount)
         except:
-            print("It appears there is already a concurrent order.")
-            return 1
-        ConfirmOrder()
-    checkOpenPV(accType)
+            DebugCommand("Could not access cashFlow element")
+            return False
+        confirmOrder()
+    else:
+        return False
+    if (verifyPV(accType) == True):
+        return True
 
 
 
-#Function: OrderPie
+#Function: orderPie(amount, pie id)
 #Usage: Purchases a M1 Pie based on the USD value (amount) and the pie ID (pid)
-#Returns: "0" if purchase successful
-def OrderPie(amount, pid):
+#Returns: True if successful
+def orderPie(amount, pid):
     print ("Beginning Pie Purchase")
     url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
     driver.get(url)
     time.sleep(5)
     if amount < 0:
-        print("Amount is less than 0")
-        SellButton = driver.find_elements_by_xpath("//*[contains(text(), 'Sell')]")
-        for element in SellButton:
-            try:
-                element.click()
-            except:
-                pass
-        time.sleep(5)
+        startSell()
         amount = amount * -1
+    if amount < 10:
+        DebugCommand("Orders under $10 cannot be processed")
+        return False
     try:
         usernameField = driver.find_element_by_name("cashFlow")
         usernameField.send_keys(amount)
     except:
         DebugCommand("There was an issue with the connection or the element 'cashFlow' could not be found.")
-        return 1
-    ConfirmOrder()
-    VerifyPie(pid)
+        return False
+    confirmOrder()
+    if (verifyPie(pid) == True):
+        return True
 
-#Function: ConfirmOrder
+
+#Function: startSell()
+#Usage: Selects the 'sell' button on an order page
+#Returns:
+def startSell():
+    DebugCommand("Selecting Sell")
+    SellButton = driver.find_elements_by_xpath("//*[contains(text(), 'Sell')]")
+    for element in SellButton:
+        try:
+            element.click()
+        except:
+            pass
+    time.sleep(2)
+
+#Function: confirmOrder()
 #Usage: Completes an opened order after the cashFlow element has been filled
 #Returns:
-def ConfirmOrder():
+def confirmOrder():
+    DebugCommand("Confirming Order")
     driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/div[6]/button[2]""").click()
     time.sleep(3)
     driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/div[9]/button[2]""").click()
     time.sleep(6)
 
 
+### INDICATORS/TRADING ###
 
-
-#Function: OrderWeight
-#Usage: Determines a new value determined on a base and multiplier
+#Function: orderWeight
+#Usage: Returns a weighted value determined on a base and multiplier
 #Returns: float()
-def OrderWeight(base, multiplier):
+def orderWeight(base, multiplier):
     if (multiplier > 0):
         multiplier = 1-(multiplier/10)
     else:
@@ -201,11 +287,3 @@ def OrderWeight(base, multiplier):
     newValue = float("{0:.2f}".format(base*multiplier))
     print("Base Amount: " + str(base) + "USD, after multiplier: " + str(newValue))
     return newValue
-
-
-def closeSession():
-    driver.close()
-
-#PercentGain = CheckDayGain(accountType)
-#OrderWeight(75, float(PercentGain[0]))
-#BuyPie(OrderWeight(BaseBuy, CheckDayGain(accountType)), accountType)
