@@ -23,14 +23,20 @@ You will need:
 
 `m1lib.selectAccount(config.accountType)` - Selects the account to make changes in
 
-`m1lib.OrderPie(config.BaseOrder, pid)` - Orders $`config.BaseOrder` of the M1 Pie with the PID being the `string` at the end of any particular Pie's URL.
+`m1lib.orderPie(config.BaseOrder, pid)` - Orders $`config.BaseOrder` of the M1 Pie with the PID being the `string` at the end of any particular Pie's URL.
 
-`m1lib.OrderPV(amount, config.accType)` - Orders $`amount` of the M1 Portfolio labeled `config.accType`
+`m1lib.cancelOrder(pid)` - Cancels the order associated with Pie ID (use getPID for `PV`s)
+
+`m1lib.orderPV(amount, config.accType)` - Orders $`amount` of the M1 Portfolio labeled `config.accType`
 
 `m1lib.checkReturnsPV(config.accountType, "week")` - Returns the gains/losses as a percentage against a portfolio
 
-`m1lib.checkReturnsPie(pid, "week")` - Returns the gains/losses as a percentage against a pie
+`m1lib.checkReturnsPie(pid, "week")` - Returns the gains/losses as a percentage(float) against a pie
 
-`m1lib.getPID(config.accountType)` - Returns the Pie ID of the accountType
+`m1lib.getPID(config.accountType)` - Returns the Pie ID of the `accountType`
+
+`m1lib.rebalancePie(pid)` - Sets Pie ID for rebalance
+
+`m1lib.rebalancePV(accType)` - Sets `accType` for rebalance
 
 `m1lib.closeSession()` - Closes the work environment
