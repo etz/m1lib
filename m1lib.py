@@ -126,13 +126,13 @@ def orderPie(amount, pid):
     if (verifyPie(pid) == True):
         return True
 
-#Function: orderPV(amount, accType)
-#Usage: Purchases a M1 Pie based on the USD value (amount) and the portfolio
-#Returns: True if successful
 def orderPV(amount, accType):
     pid = getPID(accType)
     orderPie(amount, pid)
 
+#Function: getPID(accType)
+#Usage: Gets the Pie ID of a certain account portfolio
+#Returns: string
 def getPID(accType):
     selectAccount(accType)
     #time.sleep(3)
@@ -164,6 +164,48 @@ def verifyPie(pid):
     except:
         DebugCommand("Order failed")
         return False
+
+
+#Function: cancelOrder(pid)
+#Usage: Cancels order
+#Returns: True/False
+def cancelOrder(pid):
+    DebugCommand("Cancelling order of " + pid)
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
+    driver.get(url)
+    time.sleep(5)
+    try:
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div/div[2]/span/a""").click()
+        time.sleep(3)
+        driver.find_element_by_xpath("""//*[@id="modal-content-9"]/div[2]/div[4]/button[2]""").click()
+        DebugCommand("Order cancelled")
+        return True
+    except:
+        DebugCommand("Order failed")
+        return False
+
+#Function: rebalancePie(pid)
+#Usage: Assigns rebalance
+#Returns: True/False
+def rebalancePie(pid):
+    DebugCommand("Rebalancing Portfolio" + accType)
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
+    driver.get(url)
+    time.sleep(5)
+    try:
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[3]/div/button[2]""").click()
+        time.sleep(3)
+        driver.find_element_by_xpath("""//*[@id="modal-content-11"]/div[2]/div[5]/button[2]""").click()
+        time.sleep(5)
+        DebugCommand("Rebalance complete")
+        return True
+    except:
+        DebugCommand("Rebalance failed")
+        return False
+
+def rebalancePV(accType):
+    pid = getPID(accType)
+    rebalancePie(pid)
 
 
 #Function: CheckReturnsPV
