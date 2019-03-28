@@ -29,7 +29,7 @@ You will need:
 
 `m1lib.orderPV(amount, config.accType)` - Orders $`amount` of the M1 Portfolio labeled `config.accType`
 
-`m1lib.checkReturnsPV(config.accountType, "week")` - Returns the gains/losses as a percentage against a portfolio
+`m1lib.checkReturnsPV(config.accountType, "week")` - Returns the gains/losses as a percentage(float) against a portfolio
 
 `m1lib.checkReturnsPie(pid, "week")` - Returns the gains/losses as a percentage(float) against a pie
 
@@ -40,3 +40,12 @@ You will need:
 `m1lib.rebalancePV(accType)` - Sets `accType` for rebalance
 
 `m1lib.closeSession()` - Closes the work environment
+
+
+## TODO
+
+This project is not designed to re-invent the wheel, therefore the library functionality will be limited in trading features.
+
+- Cash Only support
+- "Borrow" balance support
+- Misc. features
