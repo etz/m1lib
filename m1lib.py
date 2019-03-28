@@ -7,7 +7,7 @@ import time
 import re
 
 
-###### DEBUGGING ######
+                            ###### DEBUGGING ######
 #Function: DebugCommand
 #Usage: Prints debugging information in the console
 #Returns:
@@ -19,7 +19,7 @@ def DebugCommand(string):
         print ("DEBUG: " + string)
 
 
-###### AUTH ######
+                            ###### AUTH ######
 
 
 #Function: login(user,pass)
@@ -87,44 +87,43 @@ def selectAccount(accType):
     if accType not in accountType:
         driver.find_element_by_xpath("""//*[contains(text(), '""" + accType + """')]/..""").click()
         time.sleep(4)
-        selectAccount(accType)
     time.sleep(2)
     DebugCommand("Account Selected")
 
+                            ###### ORDERS ######
 
-###### STATUS ######
-
-
-#Function: CheckOpenOrder
-#Usage: Returns Order value depending on accType
-#Returns: Logs order information, "0" if pending order, "1" else
-#TODO
-def checkOpenPV(accType):
-    DebugCommand("Checking orders against Portfolio: " + accType)
-    selectAccount(accType)
+#Function: orderPie(amount, pie id)
+#Usage: Purchases a M1 Pie based on the USD value (amount) and the pie ID (pid)
+#Returns: True if successful
+def orderPie(amount, pid):
+    print ("Beginning Pie Purchase")
+    url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
+    driver.get(url)
+    time.sleep(5)
+    if amount < 0:
+        startSell()
+        amount = amount * -1
+    if amount < 10:
+        DebugCommand("Orders under $10 cannot be processed")
+        return False
     try:
-        orderCompletion = driver.find_element_by_xpath("""//*[contains(text(), 'Pending')]""").text
-        DebugCommand(str(orderCompletion))
-        if "buy" in orderCompletion:
-
-            #RETURNS A BUY ORDER
-
-            print("PENDING BUY:" + str(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", orderCompletion)[0]))
-            return 0
-        elif "sell" in orderCompletion:
-
-            #RETURNS A SELL ORDER
-
-            print("PENDING SELL:" + str(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", orderCompletion)[0]))
-            return 0
+        usernameField = driver.find_element_by_name("cashFlow")
+        usernameField.send_keys(amount)
     except:
-        return 1
+        DebugCommand("There was an issue with the connection or the element 'cashFlow' could not be found.")
+        return False
+    confirmOrder()
+    if (verifyPie(pid) == True):
+        return True
+
+
+                            ###### STATUS ######
 
 #Function: verifyPie
-#Usage: Checks if an order was completed as requested
-#Returns: True if order success
+#Usage: Checks if an open order is held against pid
+#Returns: True/False
 def verifyPie(pid):
-    print ("Beginning Order Verification")
+    DebugCommand("Checking purchase of " + pid)
     url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
     driver.get(url)
     time.sleep(5)
@@ -191,63 +190,6 @@ def checkReturnsPie(pid, timeframe):
     return float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/div[3]/div/div[2]/span/span[2]""").text)[0])
 
 
-
-
-#Function: BuyPortfolio
-#Usage: Purchases a M1 Portfolio based on the USD value (amount) and the accType
-#Returns: True if purchase successful
-def orderPV(amount, accType):
-    print ("Beginning Portfolio Purchase")
-    if (checkOpenPV(accType) == 1):
-        if amount < 0:
-            ticksell = 1
-            amount = amount * -1
-        if amount < 10:
-            DebugCommand("Orders under $10 cannot be processed")
-            return False
-        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[1]/div/div[1]/div[3]/div/button[1]""").click()
-        time.sleep(4)
-        try:
-            if ticksell == 1:
-                startSell()
-            usernameField = driver.find_element_by_name("cashFlow")
-            usernameField.send_keys(amount)
-        except:
-            DebugCommand("Could not access cashFlow element")
-            return False
-        confirmOrder()
-    else:
-        return False
-    if (verifyPV(accType) == True):
-        return True
-
-
-
-#Function: orderPie(amount, pie id)
-#Usage: Purchases a M1 Pie based on the USD value (amount) and the pie ID (pid)
-#Returns: True if successful
-def orderPie(amount, pid):
-    print ("Beginning Pie Purchase")
-    url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
-    driver.get(url)
-    time.sleep(5)
-    if amount < 0:
-        startSell()
-        amount = amount * -1
-    if amount < 10:
-        DebugCommand("Orders under $10 cannot be processed")
-        return False
-    try:
-        usernameField = driver.find_element_by_name("cashFlow")
-        usernameField.send_keys(amount)
-    except:
-        DebugCommand("There was an issue with the connection or the element 'cashFlow' could not be found.")
-        return False
-    confirmOrder()
-    if (verifyPie(pid) == True):
-        return True
-
-
 #Function: startSell()
 #Usage: Selects the 'sell' button on an order page
 #Returns:
@@ -262,7 +204,7 @@ def startSell():
     time.sleep(2)
 
 #Function: confirmOrder()
-#Usage: Completes an opened order after the cashFlow element has been filled
+#Usage: Completes an opened order after the cashFlow element (amount) has been filled
 #Returns:
 def confirmOrder():
     DebugCommand("Confirming Order")
@@ -272,7 +214,7 @@ def confirmOrder():
     time.sleep(6)
 
 
-### INDICATORS/TRADING ###
+                            ### INDICATORS/TRADING ###
 
 #Function: orderWeight
 #Usage: Returns a weighted value determined on a base and multiplier
