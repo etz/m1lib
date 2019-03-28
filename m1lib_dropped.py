@@ -1,3 +1,8 @@
+# These functions are either no longer being used or have been replaced
+# by a more efficient methodology.
+
+
+
 #Function: orderPV()
 #Usage: Purchases a M1 Portfolio based on the USD value (amount) and the accType
 #Returns: True if purchase successful
