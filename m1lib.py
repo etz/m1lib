@@ -109,7 +109,7 @@ def orderPie(amount, pid):
     print ("Beginning Pie Purchase")
     url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
     driver.get(url)
-    time.sleep(5)
+    time.sleep(8)
     if amount < 0:
         startSell()
         amount = amount * -1
@@ -118,7 +118,7 @@ def orderPie(amount, pid):
         return False
     try:
         usernameField = driver.find_element_by_name("cashFlow")
-        usernameField.send_keys(amount)
+        usernameField.send_keys(str(amount))
     except:
         DebugCommand("There was an issue with the connection or the element 'cashFlow' could not be found.")
         return False
