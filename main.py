@@ -4,18 +4,20 @@ import config
 #This script intends to show the m1lib.py file in use.
 
 if (m1lib.login(config.username, config.password) == True):
-    #m1lib.DebugCommand("I successfully ran the login function.")
-    #m1lib.orderPie(50, "Q1BTOjVRTjQyODE1LDYwODE5MCw2MDk5MTc%3D") #Purchases $50
-    #m1lib.orderPie(-50, "Q1BTOjVRTjM4MDYzLDU4MDEyNiw0NDQ2NDI%3D") #Sells $50
-    m1lib.orderPV(50, config.accountType)
-    #m1lib.orderPV(-50, "Individual")
-    #Your magic here... 😄
+    m1lib.DebugCommand("I successfully ran the login function.")
 
-#m1lib.BuyPortfolio(config.BaseBuy, config.accountType)
-#if ( == True):
-    #If order successful
+    #and your magic here... 😄
 
+    #Some examples:
+    #m1lib.orderPie(50, "Q1BTOjVRTjQyODE1LDYwODE5MCw2MDk5MTc%3D") #Purchases $50 from the listed pie
+    #m1lib.orderPie(-50, "Q1BTOjVRTjM4MDYzLDU4MDEyNiw0NDQ2NDI%3D") #Sells $50 from the listed pie
+    #m1lib.orderPV(50, config.accountType) #Purchases $50 from config.accountType
+    #m1lib.orderPV(-50, "Individual") #Sells $50 from "Individual" account
 
+    dayReturn = m1lib.checkReturnsPV(config.accountType, "week") #day/week/month/year/all
+    print (dayReturn) #Returns float value
+    dayReturn = m1lib.checkReturnsPie(m1lib.getPID(config.accountType), "week")
+    print (dayReturn) #Returns same float value
 
 #End your file with...
-m1lib.closeSession()
+#m1lib.closeSession()

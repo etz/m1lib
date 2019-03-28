@@ -10,13 +10,21 @@ import re
                             ###### DEBUGGING ######
 #Function: DebugCommand
 #Usage: Prints debugging information in the console
-#Returns:
+#Returns: Debugging information in Python Console
 def DebugCommand(string):
     global debug_variable
-    #Change me to debug!
-    debug_variable = 1
+    debug_variable = 1 #Change me to turn on/off debugging!
     if debug_variable == 1:
         print ("DEBUG: " + string)
+
+#Function: cashOnly()
+#Usage: Will only place orders with Cash
+#Returns: True/False
+def cashOnly(status):
+    pass
+    #Check cash balance
+    #Compare cash versus order amount
+    #Return True or False
 
 
                             ###### AUTH ######
@@ -24,7 +32,7 @@ def DebugCommand(string):
 
 #Function: login(user,pass)
 #Usage: Initalizes Chrome & logs into the associated M1 Finance account
-#Returns: "0" if login successful
+#Returns: True if successful
 def login(m1user, m1pass):
     DebugCommand("Beginning User Login")
     global driver
@@ -57,17 +65,17 @@ def checkLogin():
     try:
         if (driver.find_element_by_xpath("""//*[@id="root"]/div/div/div/div[2]/div/div/form/div[2]/div/div[1]/div[2]/div""").text == "Required"):
             print("Credentials not filled out. See config.py")
-            return 1
+            return False
     except:
         pass
     #Check if Credential login was successful
     try:
         if "Incorrect" in driver.find_element_by_xpath("""//*[@id="root"]/div/div/div/div[2]/div/div/form/div[1]/div/div/div/div""").text:
             print("Credentials incorrect. See config.py")
-            return 1
+            return False
     except:
         pass
-    return 0
+    return True
 
 #Function: closeSession()
 #Usage: Self-explanatory
@@ -87,8 +95,10 @@ def selectAccount(accType):
     if accType not in accountType:
         driver.find_element_by_xpath("""//*[contains(text(), '""" + accType + """')]/..""").click()
         time.sleep(4)
+        return 0
     time.sleep(2)
     DebugCommand("Account Selected")
+    return 1
 
                             ###### ORDERS ######
 
@@ -116,6 +126,26 @@ def orderPie(amount, pid):
     if (verifyPie(pid) == True):
         return True
 
+#Function: orderPV(amount, accType)
+#Usage: Purchases a M1 Pie based on the USD value (amount) and the portfolio
+#Returns: True if successful
+def orderPV(amount, accType):
+    pid = getPID(accType)
+    orderPie(amount, pid)
+
+def getPID(accType):
+    selectAccount(accType)
+    #time.sleep(3)
+    try:
+        driver.find_element_by_xpath("""//*[contains(text(), 'Buy/Sell')]""").click()
+    except:
+        DebugCommand("Open order already exists.")
+        return 0
+    pid = substring_after(driver.current_url, "d/c/set-order/")
+    driver.execute_script("window.history.go(-1)")
+    time.sleep(5)
+    return pid
+
 
                             ###### STATUS ######
 
@@ -142,53 +172,42 @@ def verifyPie(pid):
 def checkReturnsPV(accType, timeframe):
     DebugCommand("Checking" + timeframe + " returns against: " + str(accType))
     selectAccount(accType)
-    if "day" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "week" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "month" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "quarter" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "year" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "all" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    else:
-        DebugCommand("Timeframe not recognized.")
-        return 0
+    selectTimeframe(timeframe)
     time.sleep(3)
     DebugCommand("Returns Check Complete")
     return float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/div[3]/div/div[2]/span/span[2]""").text)[0])
-
 
 #Function: checkReturnsPie
 #Usage: Returns the percentage change over the timeframe for the pie (DOES NOT INCLUDE YOUR HOLDINGS)
 #Returns: % gain as float()
 def checkReturnsPie(pid, timeframe):
-    url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
     driver.get(url)
     time.sleep(5)
     DebugCommand("Checking" + timeframe + " returns against: " + str(pid))
-    if "day" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "week" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "month" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "quarter" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "year" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    elif "all" in timeframe:
-        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
-    else:
-        DebugCommand("Timeframe not recognized.")
-        return 0
+    selectTimeframe(timeframe)
     time.sleep(3)
     DebugCommand("Returns Check Complete")
     return float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/div[3]/div/div[2]/span/span[2]""").text)[0])
 
+#Function: selectTimeframe
+#Usage: Clicks the timeframe associated with the variable
+#Returns:
+def selectTimeframe(timeframe):
+    if "day" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[1]""").click()
+    elif "week" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[2]""").click()
+    elif "month" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[3]""").click()
+    elif "quarter" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[4]""").click()
+    elif "year" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[5]""").click()
+    elif "all" in timeframe:
+        timeframe = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div[2]/div[1]/div[2]/div/div/span[6]""").click()
+    else:
+        DebugCommand("Timeframe not recognized.")
 
 #Function: startSell()
 #Usage: Selects the 'sell' button on an order page
@@ -229,3 +248,11 @@ def orderWeight(base, multiplier):
     newValue = float("{0:.2f}".format(base*multiplier))
     print("Base Amount: " + str(base) + "USD, after multiplier: " + str(newValue))
     return newValue
+
+                            ### MUMBO JUMBO ###
+
+#Function: substring_after
+#Usage: Splits a string after the 'delim' string
+#Returns: 2nd half of split string
+def substring_after(s, delim):
+    return s.partition(delim)[2] #Thanks StackOverflow
