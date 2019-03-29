@@ -107,7 +107,7 @@ def selectAccount(accType):
 #Returns: True if successful
 def orderPie(amount, pid):
     print ("Beginning Pie Purchase")
-    url = "https://dashboard.m1finance.com/d/c/set-order/" + pid
+    url = "https://dashboard.m1finance.com/d/c/set-order/" + str(pid)
     driver.get(url)
     time.sleep(8)
     if amount < 0:
@@ -144,7 +144,138 @@ def getPID(accType):
     pid = substring_after(driver.current_url, "d/c/set-order/")
     driver.execute_script("window.history.go(-1)")
     time.sleep(5)
-    return pid
+    return str(pid)
+
+#Function: initiateDeposit(amount, accType, contributionYear)
+#Usage: Deposits into the M1 Finance account (use contributionYear for IRA accounts)
+#Returns: True if successful
+def initiateDeposit(amount, accType, year=''):
+    print ("Beginning Account Deposit")
+    #Navigate
+    url = "https://dashboard.m1finance.com/d/invest/funding"
+    driver.get(url)
+    time.sleep(5)
+    selectAccount(accType)
+    driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div/div[4]/div[1]/a/div/span""").click()
+    #Type deposit...
+    time.sleep(2)
+    depositField = driver.find_element_by_name("amount")
+    depositField.send_keys(str(amount))
+    if year != '':
+        element = driver.find_element_by_name("retirementContributionYear")
+        options = element.find_elements_by_tag_name("option")
+        for option in options:
+            if option.get_attribute("value") == str(year):
+                option.click()
+    #Confirm deposit...
+    try:
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/form/button/div/span""").click()
+        time.sleep(3)
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/div[7]/button[2]/div/span""").click()
+    except:
+        DebugCommand("There was an error confirming the deposit.")
+        return False
+    return True
+
+#Function: initiateWithdraw(amount, accType)
+#Usage: withdraws from the M1 Finance account
+#Returns: True if successful
+def initiateWithdraw(amount, accType):
+    print ("Beginning Account Withdraw")
+    #Navigate
+    url = "https://dashboard.m1finance.com/d/invest/funding"
+    driver.get(url)
+    time.sleep(5)
+    selectAccount(accType)
+    driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div/div[4]/div[2]/button""").click()
+    #Type withdrawal...
+    time.sleep(2)
+    withdrawField = driver.find_element_by_name("amount")
+    withdrawField.send_keys(str(amount))
+    #Confirm withdrawal...
+    try:
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/form/button""").click()
+        time.sleep(3)
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/span/div/div[2]/div/div/div/div/div[7]/button[2]/div/span""").click()
+        time.sleep(4)
+        #Close
+        driver.find_element_by_xpath("""//*[@id="cover-close-button"]/span""").click()
+
+    except:
+        DebugCommand("There was an error confirming the withdrawal.")
+        return False
+    return True
+
+#Function: changeAutoInvest(accType, option='', amount='')
+#Usage: Use amount only when selecting a set amount to auto-invest over. Changes the auto invest settings against accType
+#Returns: True if successful
+def changeAutoInvest(accType, option='', amount=''):
+    print ("Changing auto-invest feature")
+    #Navigate
+    url = "https://dashboard.m1finance.com/d/invest/funding"
+    driver.get(url)
+    time.sleep(5)
+    selectAccount(accType)
+    if option == "all":
+        #Click
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[2]/div[1]/div[2]/div/form/div/label[1]""").click()
+        time.sleep(2)
+        #Save
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[2]/div[1]/div[2]/div/form/button""").click()
+        time.sleep(3)
+        return True
+    elif option == "set":
+        if amount == '':
+            DebugCommand("Amount not Set for auto invest method 'set'")
+            return False
+        #Click
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[2]/div[1]/div[2]/div/form/div/label[2]/div[1]""").click()
+        time.sleep(2)
+        withdrawField = driver.find_element_by_name("maxCashThreshold")
+        withdrawField.send_keys(str(amount))
+        #Save
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[2]/div[1]/div[2]/div/form/button""").click()
+        time.sleep(3)
+        return True
+    elif option == "off":
+        #Click
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[2]/div[1]/div[2]/div/form/div/label[3]/div[1]""").click()
+        time.sleep(2)
+        #Save
+        driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[2]/div[1]/div[2]/div/form/button""").click()
+        time.sleep(3)
+        return True
+    elif option == "":
+        DebugCommand("Auto Invest Option not selected")
+        return False
+
+#Function: searchTicker(ticker)
+#Usage: Returns the price, marketcap, PE Ratio, and Dividend Yield of listed M1 Tickers
+#Returns: [float(price), float(div_yield), str(mkcap), float(pe_ratio)]
+def searchTicker(ticker):
+    url = "https://dashboard.m1finance.com/d/research/watchlist"
+    driver.get(url)
+    time.sleep(5)
+    searchField = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[1]/div/div/div[1]/div/div/input""")
+    searchField.send_keys(str(ticker) + Keys.ENTER)
+    time.sleep(5)
+    price_element = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/span[1]""")
+    list_price = price_element.find_elements_by_tag_name("span")
+    price = []
+    for number in list_price:
+        price.append(number.text)
+    price = "".join(price)
+    price = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", price)[0])
+    #print (price)
+    div_yield = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div[3]/div/div/div[3]/div[1]""").text)[0])
+    #print (div_yield)
+    mkcap = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div[3]/div/div/div[1]/div[1]""").text
+    #print (mkcap)
+    pe_ratio = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div[3]/div/div/div[2]/div[1]""").text)[0])
+    #print (pe_ratio)
+    return [price, div_yield, mkcap, pe_ratio]
+
+
 
 
                             ###### STATUS ######
@@ -153,8 +284,8 @@ def getPID(accType):
 #Usage: Checks if an open order is held against pid
 #Returns: True/False
 def verifyPie(pid):
-    DebugCommand("Checking purchase of " + pid)
-    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
+    DebugCommand("Checking purchase of " + str(pid))
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + str(pid)
     driver.get(url)
     time.sleep(5)
     try:
@@ -170,8 +301,8 @@ def verifyPie(pid):
 #Usage: Cancels order
 #Returns: True/False
 def cancelOrder(pid):
-    DebugCommand("Cancelling order of " + pid)
-    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
+    DebugCommand("Cancelling order of " + str(pid))
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + str(pid)
     driver.get(url)
     time.sleep(5)
     try:
@@ -189,7 +320,7 @@ def cancelOrder(pid):
 #Returns: True/False
 def rebalancePie(pid):
     DebugCommand("Rebalancing Portfolio" + accType)
-    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + str(pid)
     driver.get(url)
     time.sleep(5)
     try:
@@ -223,7 +354,7 @@ def checkReturnsPV(accType, timeframe):
 #Usage: Returns the percentage change over the timeframe for the pie (DOES NOT INCLUDE YOUR HOLDINGS)
 #Returns: % gain as float()
 def checkReturnsPie(pid, timeframe):
-    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + pid
+    url = "https://dashboard.m1finance.com/d/invest/portfolio/" + str(pid)
     driver.get(url)
     time.sleep(5)
     DebugCommand("Checking" + timeframe + " returns against: " + str(pid))
