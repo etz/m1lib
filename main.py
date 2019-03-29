@@ -19,5 +19,11 @@ if (m1lib.login(config.username, config.password) == True):
     dayReturn = m1lib.checkReturnsPie(m1lib.getPID(config.accountType), "week")
     print (dayReturn) #Returns same float value
 
+
+    AAPL = m1lib.searchTicker("aapl")
+    #m1lib.initiateDeposit(50, "Roth", 2019)
+    m1lib.changeAutoInvest("Roth", option="off", amount='')
+    m1lib.changeAutoInvest("Individual", "all")
+    #m1lib.changeAutoInvest("Roth", option="set", amount='10')
 #End your file with...
-#m1lib.closeSession()
+m1lib.closeSession()
