@@ -89,16 +89,16 @@ def closeSession():
 #Returns:
 def selectAccount(accType):
     DebugCommand("Beginning Account Selection")
-    driver.find_elements_by_xpath("//*[contains(text(), ' - ')]/../..")[1].click()
-    accountType = driver.find_elements_by_xpath("//*[contains(text(), ' - ')]")[1].text
-    DebugCommand(str(accountType))
+    accountType = driver.find_element_by_xpath("""//*[@id="popup22"]/div[1]/h3""").text
+    DebugCommand("Current Account:" + str(accountType))
     if accType not in accountType:
+        DebugCommand("Selecting Account:" + str(accType))
+        driver.find_elements_by_xpath("//*[contains(text(), ' - ')]/../..")[1].click()
+        time.sleep(1)
         driver.find_element_by_xpath("""//*[contains(text(), '""" + accType + """')]/..""").click()
         time.sleep(4)
-        return 0
-    time.sleep(2)
-    DebugCommand("Account Selected")
-    return 1
+        accountType = driver.find_element_by_xpath("""//*[@id="popup22"]/div[1]/h3""").text
+        DebugCommand("Current Account:" + str(accountType))
 
                             ###### ORDERS ######
 
