@@ -18,53 +18,59 @@ You will need:
 ## Installation:
 
 1. Download ZIP or GIT with ```git clone https://github.com/etz/m1lib.git```
-2. Use ```import m1lib``` in a new python file or modify main.py
 3. In terminal, ```cd /path/to/m1lib```
-4. Modify the `config.py` file
+4. Modify the `py` file
 5. `python3 main.py`
 
 
 ## Usage:
 
+```
+from m1lib import *
+from config import *
+```
+
 ### Basic / Authentication
 
-`m1lib.login(config.username, config.password)` - Logs into the M1Finance Account using Chromedriver
+`login(username, password)` - Logs into the M1Finance Account using Chromedriver
 
-`m1lib.selectAccount(config.accountType)` - Selects the account to make changes in
+`selectAccount(accountType)` - Selects the account to make changes in
 
-`m1lib.closeSession()` - Closes the associated account
+`closeSession()` - Closes the associated account
 
 ### Trading
 
-`m1lib.orderPie(config.BaseOrder, pid)` - Orders $`config.BaseOrder` of the M1 Pie with the PID being the `string` at the end of any particular Pie's URL.
+`orderPie(amount, pid)` - Orders amount of pie based on string `pid`
 
-`m1lib.cancelOrder(pid)` - Cancels the order associated with Pie ID (use getPID for `PV`s)
+`cancelOrder(pid)` - Cancels the order associated with Pie ID (use getPID for `PV`s)
 
-`m1lib.orderPV(amount, config.accType)` - Orders $`amount` of the M1 Portfolio labeled `config.accType`
+`orderPV(amount, accountType)` - Orders $`amount` of the M1 Portfolio labeled `accountType`
 
-`m1lib.checkReturnsPV(config.accountType, "week")` - Returns the gains/losses as a percentage(float) against a portfolio
+`checkReturnsPV(accountType, "week")` - Returns the gains/losses as a percentage(float) against a portfolio
 
-`m1lib.checkReturnsPie(pid, "week")` - Returns the gains/losses as a percentage(float) against a pie
+`checkReturnsPie(pid, "week")` - Returns the gains/losses as a percentage(float) against a pie
 
-`m1lib.getPID(config.accountType)` - Returns the Pie ID of the `accountType` from the config file.
+`getPID(accountType)` - Returns the Pie ID of the `accountType` from the config file.
 
-`m1lib.rebalancePie(pid)` - Sets a specific Pie ID for rebalance
+`rebalancePie(pid)` - Sets a specific Pie ID for rebalance
 
-`m1lib.rebalancePV(accType)` - Sets `accType` for rebalance
+`rebalancePV(accountType)` - Sets `accountType` for rebalance
 
-`m1lib.initiateDeposit(amount, accType, year='')`
+`initiateDeposit(amount, accountType, year='')` - Initiate a deposit for a selected account. If IRA, set a third variable year=`2019`
 
-`m1lib.initiateWithdraw(amount, accType)`
+`initiateWithdraw(amount, accountType)` - Initiate a withdraw for a selected account.
 
 ### Search & Options
 
-`m1lib.tickerSearch(mk_min='',mk_max='',pe_min='',pe_max='',div_min='',div_max='',sector='',industry='')` - I'll document this one later.
+`tickerSearch(mk_min='',mk_max='',pe_min='',pe_max='',div_min='',div_max='',sector='',industry='')` - searches M1 for all stocks within set parameters. 
 
-`m1lib.searchTicker(ticker)` -  Returns [float(price), float(div_yield), str(mkcap), float(pe_ratio)]
+`tickerSearch(aum_min='',aum_max='',exp_min='',exp_max='',div_min='',div_max='',sector='',industry='')` - searches M1 for all funds within set parameters.
 
-`m1lib.getCurrentMarketData()` - Returns the [day] % difference in the SPY, DIA, and QQQ tickers similar to searchTicker
+`searchTicker(ticker)` -  Returns [float(price), float(div_yield), str(mkcap), float(pe_ratio)] of string ticker
 
-`m1lib.changeAutoInvest(accType, option='', amount='')` - options=`set/all/off`, use amount if options=`set`
+`getCurrentMarketData()` - Returns the [day] % difference in the SPY, DIA, and QQQ tickers similar to searchTicker
+
+`changeAutoInvest(accountType, option='', amount='')` - options=`set/all/off`, use amount if options=`set`
 
 
 ## TODO
