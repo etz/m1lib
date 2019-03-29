@@ -54,15 +54,15 @@ You will need:
 
 `m1lib.initiateDeposit(amount, accType, year='')`
 
-`initiateWithdraw(amount, accType)`
+`m1lib.initiateWithdraw(amount, accType)`
 
 ### Search & Options
 
 `m1lib.tickerSearch(mk_min='',mk_max='',pe_min='',pe_max='',div_min='',div_max='',sector='',industry='')` - I'll document this one later.
 
-`searchTicker(ticker)` -  Returns [float(price), float(div_yield), str(mkcap), float(pe_ratio)]
+`m1lib.searchTicker(ticker)` -  Returns [float(price), float(div_yield), str(mkcap), float(pe_ratio)]
 
-`getCurrentMarketData()` - Returns the [day] % difference in the SPY, DIA, and QQQ tickers similar to searchTicker
+`m1lib.getCurrentMarketData()` - Returns the [day] % difference in the SPY, DIA, and QQQ tickers similar to searchTicker
 
 `m1lib.changeAutoInvest(accType, option='', amount='')` - options=`set/all/off`, use amount if options=`set`
 
