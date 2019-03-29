@@ -1,11 +1,10 @@
-import m1lib
+from m1lib import *
 import config
 
 #This script intends to show the m1lib.py file in use.
 
-if (m1lib.login(config.username, config.password) == True):
-    m1lib.DebugCommand("I successfully ran the login function.")
-    m1lib.tickerSearch(aum_min='0',aum_max='',pe_min='1',pe_max='',div_min='3',div_max='5',sector='Basic Materials',industry='Coal')
+if (login(config.username, config.password) == True):
+    DebugCommand("I successfully ran the login function.")
     #m1lib.selectAccount("Roth")
     #and your magic here... 😄
 
@@ -20,8 +19,8 @@ if (m1lib.login(config.username, config.password) == True):
     #dayReturn = m1lib.checkReturnsPie(m1lib.getPID(config.accountType), "week")
     #print (dayReturn) #Returns same float value
 
-
-    #AAPL = m1lib.searchTicker("aapl")
+    tickers = tickerSearch(pe_min='3',pe_max='20',div_min='3',div_max='5',sector='Basic Materials',industry='Coal')
+    ticker_info = searchTicker(tickers[0])
     #m1lib.initiateDeposit(50, "Roth", 2019)
     #m1lib.changeAutoInvest("Roth", option="off", amount='')
     #m1lib.changeAutoInvest("Individual", "all")
