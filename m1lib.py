@@ -276,6 +276,111 @@ def searchTicker(ticker):
     return [price, div_yield, mkcap, pe_ratio]
 
 
+#Function: getCurrentMarketData()
+#Usage: Returns the % difference in the SPY, DIA, and QQQ tickers in a float
+#Returns: float([SPY_DATA, DIA_DATA, QQQ_DATA])
+def getCurrentMarketData():
+    url = "https://dashboard.m1finance.com/d/research/market-news"
+    driver.get(url)
+    time.sleep(5)
+    SPY = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div/div/div[2]/div[1]/div/div[1]/div[3]/span/span[2]""").text)[0])
+    DIA = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div/div/div[2]/div[2]/div/div[1]/div[3]/span/span[2]""").text)[0])
+    QQQ = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div/div/div[2]/div[3]/div/div[1]/div[3]/span/span[2]""").text)[0])
+    return [SPY, DIA, QQQ]
+
+
+#Function: tickerSearch(mk_min='',mk_max='',pe_min='',pe_max='',div_min='',div_max='',sector='',industry='')
+#Usage: search m1 fianance's stock or fund database for what is queried
+#Returns: list of tickers that match search
+def tickerSearch(mk_min='',mk_max='',aum_min='',aum_max='',pe_min='',pe_max='',exp_min='',exp_max='',div_min='',div_max='',sector='',industry=''):
+    #Determine Stock
+    if mk_min != '' or mk_max != '' or pe_min != '' or pe_max != '':
+        if aum_min == '' and aum_max == '' and exp_min == '' and exp_max == '':
+            url = "https://dashboard.m1finance.com/d/research/stocks"
+            driver.get(url)
+            time.sleep(5)
+        else:
+            DebugCommand("aum_min, aum_max, exp_min, exp_max: one is declared")
+            return tickerSearch(mk_min=mk_min,mk_max=mk_max,pe_min=pe_min,pe_max=pe_max,div_min=div_min,div_max=div_max,sector=sector,industry=industry)
+    if aum_min != '' or aum_max != '' or exp_min != '' or exp_max != '':
+        if mk_min == '' and mk_max == '' and pe_min == '' and pe_max == '':
+            url = "https://dashboard.m1finance.com/d/research/funds"
+            driver.get(url)
+            time.sleep(5)
+        else:
+            DebugCommand("mk_min, mk_max, pe_min, pe_max: one is declared")
+            return tickerSearch(aum_min=aum_min,aum_max=aum_max,exp_min=exp_min,exp_max=exp_max,div_min=div_min,div_max=div_max,sector=sector,industry=industry)
+    if sector != '':
+        sector_list = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div[5]/div/div""")
+        sectors = sector_list.find_elements_by_class_name("style__label__3BGEW")
+        sector_list = []
+        for sector_item in sectors:
+            sector_list.append(sector_item.text)
+        #Select Sector
+        for sector_item in sector_list:
+            if str(sector).lower() in str(sector_item).lower():
+                DebugCommand("Selected Sector Succesfully")
+                i = sector_list.index(sector_item)
+                sectors[i].click()
+    if industry != '':
+        time.sleep(2.5)
+        sector_list = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div[5]/div/div[2]""")
+        sectors = sector_list.find_elements_by_class_name("style__label__3BGEW")
+        sector_list = []
+        for sector_item in sectors:
+            sector_list.append(sector_item.text)
+        #Select Industry
+        for sector_item in sector_list:
+            if str(industry).lower() in str(sector_item).lower():
+                DebugCommand("Selected Industry Succesfully")
+                i = sector_list.index(sector_item)
+                sectors[i].click()
+    if mk_min != '':
+        editField = driver.find_elements_by_name("min")[0]
+        editField.send_keys(str(mk_min))
+    if mk_max != '':
+        editField = driver.find_elements_by_name("max")[0]
+        editField.send_keys(str(mk_max))
+    if aum_min != '':
+        editField = driver.find_elements_by_name("min")[0]
+        editField.send_keys(str(aum_min))
+    if aum_max != '':
+        editField = driver.find_elements_by_name("max")[0]
+        editField.send_keys(str(aum_max))
+    if pe_min != '':
+        editField = driver.find_elements_by_name("min")[1]
+        editField.send_keys(str(pe_min))
+    if pe_max != '':
+        editField = driver.find_elements_by_name("max")[1]
+        editField.send_keys(str(pe_max))
+    if exp_min != '':
+        editField = driver.find_elements_by_name("min")[2]
+        editField.send_keys(str(mk_min))
+    if exp_max != '':
+        editField = driver.find_elements_by_name("max")[2]
+        editField.send_keys(str(mk_max))
+    if div_min != '':
+        if 'stocks' in driver.current_url:
+            editField = driver.find_elements_by_name("min")[2]
+            editField.send_keys(str(div_min))
+        else:
+            editField = driver.find_elements_by_name("min")[1]
+            editField.send_keys(str(div_min))
+    if div_max != '':
+        if 'stocks' in driver.current_url:
+            editField = driver.find_elements_by_name("max")[2]
+            editField.send_keys(str(div_max))
+        else:
+            editField = driver.find_elements_by_name("max")[2]
+            editField.send_keys(str(div_max))[1]
+    time.sleep(2)
+    results = driver.find_element_by_tag_name("tbody")
+    result_list = results.find_elements_by_class_name("style__tableRow__1L9Tk")
+    results = []
+    for item in result_list:
+        results.append(item.find_element_by_tag_name("span").text)
+    DebugCommand(results)
+    return results
 
 
                             ###### STATUS ######
