@@ -378,8 +378,10 @@ def tickerSearch(mk_min='',mk_max='',aum_min='',aum_max='',pe_min='',pe_max='',e
     result_list = results.find_elements_by_class_name("style__tableRow__1L9Tk")
     results = []
     for item in result_list:
-        results.append(item.find_element_by_tag_name("span").text)
-    DebugCommand(results)
+        tickersymbol = item.find_element_by_tag_name("span").text
+        results.append(tickersymbol)
+        DebugCommand("Ticker " + str(tickersymbol))
+
     return results
 
 
