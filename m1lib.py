@@ -251,7 +251,7 @@ def changeAutoInvest(accType, option='', amount=''):
 
 #Function: searchTicker(ticker)
 #Usage: Returns the price, marketcap, PE Ratio, and Dividend Yield of listed M1 Tickers
-#Returns: [float(price), float(div_yield), str(mkcap), float(pe_ratio)]
+#Returns: [float(price), float(percent_change), float(div_yield), str(mkcap), float(pe_ratio)]
 def searchTicker(ticker):
     url = "https://dashboard.m1finance.com/d/research/watchlist"
     driver.get(url)
@@ -266,6 +266,9 @@ def searchTicker(ticker):
         price.append(number.text)
     price = "".join(price)
     price = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", price)[0])
+    percent_change = driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/span[2]/span[1]""").text
+    percent_change = float(percent_change.replace("$", ""))
+    percent_change = round((percent_change/(price-percent_change)*100), 2)
     #print (price)
     div_yield = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div[3]/div/div/div[3]/div[1]""").text)[0])
     #print (div_yield)
@@ -273,7 +276,7 @@ def searchTicker(ticker):
     #print (mkcap)
     pe_ratio = float(re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", driver.find_element_by_xpath("""//*[@id="root"]/div/div/div[1]/div[2]/div/div[2]/div/div[1]/div/div/div[3]/div/div/div[2]/div[1]""").text)[0])
     #print (pe_ratio)
-    return [price, div_yield, mkcap, pe_ratio]
+    return [price, percent_change, div_yield, mkcap, pe_ratio]
 
 
 #Function: getCurrentMarketData()
