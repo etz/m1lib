@@ -37,9 +37,12 @@ def login(m1user, m1pass):
     DebugCommand("Beginning User Login")
     global driver
     #Initalize Chromedriver
-    chromeOptions = webdriver.ChromeOptions()
+    chrome_options = webdriver.ChromeOptions()
+    #chrome_options.add_argument('--headless')
+    #chrome_options.add_argument('--no-sandbox')
+    #chrome_options.add_argument('--disable-dev-shm-usage')
     capabilities=webdriver.DesiredCapabilities.CHROME
-    driver= webdriver.Chrome(options=chromeOptions,desired_capabilities=capabilities)
+    driver= webdriver.Chrome(options=chrome_options,desired_capabilities=capabilities)
     #Navigate to M1
     url = "https://dashboard.m1finance.com/login"
     driver.get(url)
