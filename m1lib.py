@@ -15,7 +15,7 @@ def DebugCommand(string):
     global debug_variable
     debug_variable = 1 #Change me to turn on/off debugging!
     if debug_variable == 1:
-        print ("DEBUG: " + string)
+        print ("DEBUG: " + str(string))
 
 #Function: cashOnly()
 #Usage: Will only place orders with Cash
@@ -89,7 +89,7 @@ def closeSession():
 #Returns:
 def selectAccount(accType):
     DebugCommand("Beginning Account Selection")
-    accountType = driver.find_element_by_xpath("""//*[@id="popup22"]/div[1]/h3""").text
+    accountType = driver.find_elements_by_xpath("""//h3""")[2].text
     DebugCommand("Current Account:" + str(accountType))
     if accType not in accountType:
         DebugCommand("Selecting Account:" + str(accType))
@@ -97,7 +97,7 @@ def selectAccount(accType):
         time.sleep(1)
         driver.find_element_by_xpath("""//*[contains(text(), '""" + accType + """')]/..""").click()
         time.sleep(4)
-        accountType = driver.find_element_by_xpath("""//*[@id="popup22"]/div[1]/h3""").text
+        accountType = driver.find_elements_by_xpath("""//h3""")[2].text
         DebugCommand("Current Account:" + str(accountType))
 
                             ###### ORDERS ######
@@ -127,6 +127,9 @@ def orderPie(amount, pid):
         return True
 
 def orderPV(amount, accType):
+    url = "https://dashboard.m1finance.com/d/invest/portfolio"
+    driver.get(url)
+    time.sleep(5)
     pid = getPID(accType)
     orderPie(amount, pid)
 
