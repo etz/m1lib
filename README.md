@@ -78,6 +78,10 @@ from config import *
 `changeAutoInvest(accountType, option='', amount='')` - options=`set/all/off`, use amount if options=`set`
 
 
+## Credits
+
+Developed by Ethan Nadzieja.
+
 ## TODO
 
 This project is not designed to re-invent the wheel, therefore the library functionality will be limited in trading features.
