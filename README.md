@@ -4,7 +4,6 @@ There is no public API available for M1 Finance, which presents an opportunity..
 
 `pid` = the string at the end of any Pie's URL, /d/invest/portfolio/`Q1BTOYwODE5MCw2jVRTjQyODE1LDMDk5MTc%3D`
 
-
 ## Dependencies:
 
 You probably already have:
@@ -40,17 +39,23 @@ from config import *
 
 ### Trading
 
+#### Buying
 `orderPie(amount, pid)` - Orders amount of pie based on string `pid`
+
+`orderPV(amount, accountType)` - Orders $`amount` of the M1 Portfolio labeled `accountType`
+
+`getPID(accountType)` - Returns the Pie ID of the `accountType` from the config file.
 
 `cancelOrder(pid)` - Cancels the order associated with Pie ID (use getPID for `PV`s)
 
-`orderPV(amount, accountType)` - Orders $`amount` of the M1 Portfolio labeled `accountType`
+#### Returns
 
 `checkReturnsPV(accountType, "week")` - Returns the gains/losses as a percentage(float) against a portfolio
 
 `checkReturnsPie(pid, "week")` - Returns the gains/losses as a percentage(float) against a pie
 
-`getPID(accountType)` - Returns the Pie ID of the `accountType` from the config file.
+
+#### Actions
 
 `rebalancePie(pid)` - Sets a specific Pie ID for rebalance
 
@@ -62,7 +67,7 @@ from config import *
 
 ### Search & Options
 
-`tickerSearch(mk_min='',mk_max='',pe_min='',pe_max='',div_min='',div_max='',sector='',industry='')` - searches M1 for all stocks within set parameters. 
+`tickerSearch(mk_min='',mk_max='',pe_min='',pe_max='',div_min='',div_max='',sector='',industry='')` - searches M1 for all stocks within set parameters.
 
 `tickerSearch(aum_min='',aum_max='',exp_min='',exp_max='',div_min='',div_max='',sector='',industry='')` - searches M1 for all funds within set parameters.
 
@@ -80,3 +85,4 @@ This project is not designed to re-invent the wheel, therefore the library funct
 - Cash Only support
 - "Borrow" balance support
 - Misc. features
+- Cancel PV Orders
